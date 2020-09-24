@@ -23,6 +23,7 @@
     "@truffle/contract": "^4.2.24",
     "@truffle/expect": "^0.0.15",
     "@truffle/provisioner": "^0.2.7",
+    "abi-to-sol": "^0.1.5",
     "debug": "^4.1.1",
     "detect-installed": "^2.0.4",
     "get-installed-path": "^4.0.8",
