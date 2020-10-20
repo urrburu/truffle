@@ -1,13 +1,12 @@
+import camelCase from "camel-case";
+import { IdObject, toIdObject } from "@truffle/db/meta";
+import { NamedCollectionName, NamedResource } from "@truffle/db/definitions";
+
 import { WorkspaceRequest, WorkspaceResponse } from "@truffle/db/loaders/types";
-import { toIdObject } from "@truffle/db/meta";
 
 import { AddNameRecords } from "./add.graphql";
+import { forType } from "./get.graphql";
 export { AddNameRecords };
-
-interface Resource {
-  id: string;
-  name: string;
-}
 
 type ResolveFunc = (
   name: string,
@@ -18,32 +17,47 @@ type ResolveFunc = (
   WorkspaceResponse
 >;
 
-export function* generateNameRecordsLoad(
-  resources: Resource[],
-  type: string,
-  getCurrent: ResolveFunc
+function* getResourceName<N extends NamedCollectionName>(
+  { id }: IdObject<NamedResource<N>>,
+  type: string
 ): Generator<
   WorkspaceRequest,
-  DataModel.NameRecord[],
-  WorkspaceResponse<"nameRecordsAdd", DataModel.NameRecordsAddPayload>
+  NamedResource<N>,
+  WorkspaceResponse<N, NamedResource<N>>
 > {
+  const GetResourceName = forType(type);
+
+  const result = yield {
+    request: GetResourceName,
+    variables: { id }
+  };
+
+  return result.data[camelCase(type)];
+}
+
+export function* generateNameRecordsLoad<N extends NamedCollectionName>(
+  resources: IdObject<NamedResource<N>>[],
+  type: string,
+  getCurrent: ResolveFunc
+): Generator<WorkspaceRequest, DataModel.NameRecord[], WorkspaceResponse> {
   const nameRecords = [];
   for (const resource of resources) {
-    const { name } = resource;
+    const { name }: NamedResource<N> = yield* getResourceName(resource, type);
+
     const current: DataModel.NameRecord = yield* getCurrent(name, type);
 
     if (current) {
       nameRecords.push({
         name,
         type,
-        resource: toIdObject(resource),
+        resource,
         previous: toIdObject(current)
       });
     } else {
       nameRecords.push({
         name,
         type,
-        resource: toIdObject(resource)
+        resource
       });
     }
   }
