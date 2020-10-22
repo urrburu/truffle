@@ -1,20 +1,9 @@
 import { GraphQLSchema, DocumentNode, parse, execute } from "graphql";
+import type TruffleConfig from "@truffle/config";
 import { Loaders } from "./loaders";
 import { schema } from "./schema";
 import { connect } from "./connect";
 import { Context } from "./definitions";
-
-interface IConfig {
-  contracts_build_directory: string;
-  contracts_directory: string;
-  working_directory?: string;
-  db?: {
-    adapter?: {
-      name: string;
-      settings?: any;
-    };
-  };
-}
 
 export class TruffleDB {
   public schema: GraphQLSchema;
@@ -22,7 +11,7 @@ export class TruffleDB {
 
   private context: Context;
 
-  constructor(config: IConfig) {
+  constructor(config: TruffleConfig) {
     this.schema = schema;
     this.context = this.createContext(config);
     this.loaders = new Loaders({
@@ -37,7 +26,7 @@ export class TruffleDB {
     return await execute(this.schema, document, null, this.context, variables);
   }
 
-  private createContext(config: IConfig): Context {
+  private createContext(config: TruffleConfig): Context {
     return {
       workspace: connect({
         workingDirectory: config.working_directory,
