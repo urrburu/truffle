@@ -2,7 +2,8 @@ import { DocumentNode } from "graphql";
 import { WorkflowCompileResult } from "@truffle/compile-common";
 import { IdObject, toIdObject } from "@truffle/db/meta";
 import { NamedCollectionName, NamedResource } from "@truffle/db/definitions";
-import { WorkspaceRequest, WorkspaceResponse } from "./types";
+import { LoaderRunner } from "./types";
+import { forDb } from "./run";
 import {
   generateCompileLoad,
   generateInitializeLoad,
@@ -18,43 +19,20 @@ export interface LoadersConstructorOptions {
 }
 
 export class Loaders {
-  private db: ITruffleDB;
+  private run: LoaderRunner;
 
   constructor(options: LoadersConstructorOptions) {
-    this.db = options.db;
-  }
-
-  private async runLoader<
-    Request extends WorkspaceRequest,
-    Response extends WorkspaceResponse,
-    Args extends unknown[],
-    Return
-  >(
-    loader: (...args: Args) => Generator<Request, Return, Response>,
-    ...args: Args
-  ): Promise<Return> {
-    const saga = loader(...args);
-    let current = saga.next();
-
-    while (!current.done) {
-      const { request, variables } = current.value as Request;
-
-      const response: Response = await this.db.query(request, variables);
-
-      current = saga.next(response);
-    }
-
-    return current.value;
+    this.run = forDb(options.db);
   }
 
   async loadProject(options: {
     directory: string;
   }): Promise<IdObject<DataModel.Project>> {
-    const project = await this.runLoader(generateInitializeLoad, {
+    const project = await this.run(generateInitializeLoad, {
       directory: options.directory
     });
 
-    return toIdObject(project);
+    return project;
   }
 
   async loadNames(options: {
@@ -65,7 +43,7 @@ export class Loaders {
       }
     >;
   }) {
-    return await this.runLoader(
+    return await this.run(
       generateNamesLoad,
       options.project,
       options.assignments
@@ -79,7 +57,7 @@ export class Loaders {
   }): Promise<IdObject<DataModel.Compilation>[]> {
     const { project, result, assignNames } = options;
 
-    const { compilations, contracts } = await this.runLoader(
+    const { compilations, contracts } = await this.run(
       generateCompileLoad,
       result
     );

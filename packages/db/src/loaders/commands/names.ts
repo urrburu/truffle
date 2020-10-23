@@ -6,7 +6,7 @@ import {
 } from "@truffle/db/loaders/resources/projects";
 
 import { generateNameRecordsLoad } from "@truffle/db/loaders/resources/nameRecords";
-import { WorkspaceRequest, WorkspaceResponse } from "@truffle/db/loaders/types";
+import { Load } from "@truffle/db/loaders/types";
 import { IdObject } from "@truffle/db/meta";
 import { NamedCollectionName, NamedResource } from "@truffle/db/definitions";
 
@@ -18,7 +18,7 @@ export function* generateNamesLoad(
   assignments: {
     [N in NamedCollectionName]: IdObject<NamedResource<N>>[];
   }
-): Generator<WorkspaceRequest, any, WorkspaceResponse<string>> {
+): Load<void> {
   let getCurrent = function*(name, type) {
     return yield* generateProjectNameResolve(project, name, type);
   };

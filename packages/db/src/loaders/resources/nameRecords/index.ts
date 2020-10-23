@@ -2,7 +2,7 @@ import camelCase from "camel-case";
 import { IdObject, toIdObject } from "@truffle/db/meta";
 import { NamedCollectionName, NamedResource } from "@truffle/db/definitions";
 
-import { WorkspaceRequest, WorkspaceResponse } from "@truffle/db/loaders/types";
+import { Load } from "@truffle/db/loaders/types";
 
 import { AddNameRecords } from "./add.graphql";
 import { forType } from "./get.graphql";
@@ -11,20 +11,12 @@ export { AddNameRecords };
 type ResolveFunc = (
   name: string,
   type: string
-) => Generator<
-  WorkspaceRequest,
-  DataModel.NameRecord | null,
-  WorkspaceResponse
->;
+) => Load<DataModel.NameRecord | null>;
 
 function* getResourceName<N extends NamedCollectionName>(
   { id }: IdObject<NamedResource<N>>,
   type: string
-): Generator<
-  WorkspaceRequest,
-  NamedResource<N>,
-  WorkspaceResponse<N, NamedResource<N>>
-> {
+): Load<NamedResource<N>> {
   const GetResourceName = forType(type);
 
   const result = yield {
@@ -39,7 +31,7 @@ export function* generateNameRecordsLoad<N extends NamedCollectionName>(
   resources: IdObject<NamedResource<N>>[],
   type: string,
   getCurrent: ResolveFunc
-): Generator<WorkspaceRequest, DataModel.NameRecord[], WorkspaceResponse> {
+): Load<DataModel.NameRecord[]> {
   const nameRecords = [];
   for (const resource of resources) {
     const { name }: NamedResource<N> = yield* getResourceName(resource, type);
