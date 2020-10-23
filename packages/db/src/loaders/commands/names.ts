@@ -8,7 +8,6 @@ import {
 import { generateNameRecordsLoad } from "@truffle/db/loaders/resources/nameRecords";
 import { Load } from "@truffle/db/loaders/types";
 import { IdObject } from "@truffle/db/meta";
-import { NamedCollectionName, NamedResource } from "@truffle/db/definitions";
 
 /**
  * generator function to load nameRecords and project names into Truffle DB
@@ -16,7 +15,7 @@ import { NamedCollectionName, NamedResource } from "@truffle/db/definitions";
 export function* generateNamesLoad(
   project: IdObject<DataModel.Project>,
   assignments: {
-    [N in NamedCollectionName]: IdObject<NamedResource<N>>[];
+    [collectionName: string]: IdObject[];
   }
 ): Load<void> {
   let getCurrent = function*(name, type) {

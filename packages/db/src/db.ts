@@ -1,22 +1,17 @@
 import { GraphQLSchema, DocumentNode, parse, execute } from "graphql";
 import type TruffleConfig from "@truffle/config";
-import { Loaders } from "./loaders";
 import { schema } from "./schema";
 import { connect } from "./connect";
 import { Context } from "./definitions";
 
 export class TruffleDB {
   public schema: GraphQLSchema;
-  public loaders: Loaders;
 
   private context: Context;
 
   constructor(config: TruffleConfig) {
     this.schema = schema;
     this.context = this.createContext(config);
-    this.loaders = new Loaders({
-      db: this
-    });
   }
 
   async query(query: DocumentNode | string, variables: any = {}): Promise<any> {

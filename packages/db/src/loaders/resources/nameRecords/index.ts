@@ -1,6 +1,5 @@
 import camelCase from "camel-case";
 import { IdObject, toIdObject } from "@truffle/db/meta";
-import { NamedCollectionName, NamedResource } from "@truffle/db/definitions";
 
 import { Load } from "@truffle/db/loaders/types";
 
@@ -13,10 +12,10 @@ type ResolveFunc = (
   type: string
 ) => Load<DataModel.NameRecord | null>;
 
-function* getResourceName<N extends NamedCollectionName>(
-  { id }: IdObject<NamedResource<N>>,
+function* getResourceName(
+  { id }: IdObject,
   type: string
-): Load<NamedResource<N>> {
+): Load<{ name: string }> {
   const GetResourceName = forType(type);
 
   const result = yield {
@@ -27,14 +26,14 @@ function* getResourceName<N extends NamedCollectionName>(
   return result.data[camelCase(type)];
 }
 
-export function* generateNameRecordsLoad<N extends NamedCollectionName>(
-  resources: IdObject<NamedResource<N>>[],
+export function* generateNameRecordsLoad(
+  resources: IdObject[],
   type: string,
   getCurrent: ResolveFunc
 ): Load<DataModel.NameRecord[]> {
   const nameRecords = [];
   for (const resource of resources) {
-    const { name }: NamedResource<N> = yield* getResourceName(resource, type);
+    const { name } = yield* getResourceName(resource, type);
 
     const current: DataModel.NameRecord = yield* getCurrent(name, type);
 

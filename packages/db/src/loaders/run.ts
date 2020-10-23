@@ -1,4 +1,13 @@
-import { Loader, LoaderRunner, LoadRequest, RequestName } from "./types";
+import { Loader, LoadRequest, RequestName } from "./types";
+
+export type LoaderRunner = <
+  A extends unknown[],
+  T = any,
+  N extends RequestName | string = string
+>(
+  loader: Loader<A, T, N>,
+  ...args: A
+) => Promise<T>;
 
 export const forDb = (db): LoaderRunner => async <
   Args extends unknown[],

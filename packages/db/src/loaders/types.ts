@@ -77,12 +77,3 @@ export type Loader<
   T = any,
   N extends RequestName | string = string
 > = (...args: A) => Load<T, N>;
-
-export type LoaderRunner = <
-  A extends unknown[],
-  T = any,
-  N extends RequestName | string = string
->(
-  loader: Loader<A, T, N>,
-  ...args: A
-) => Promise<T>;
